@@ -22,7 +22,7 @@ app.use(
   })
 );
 //Controllers
-const userController = require("./controllets/UserControllers");
+const userController = require("./controllers/UserControllers");
 const Conversation = require("./models/Conversation");
 const USER = require("./models/Users").USER;
 
@@ -88,44 +88,44 @@ wss.on("connection", (connection, req) => {
     const newMessage = JSON.parse(message.toString());
     const { to, from, textMessage, reciever, sender, timeStamp, image } =
       newMessage;
-      console.log(image)
-      if(image){cloudinary.v2.uploader.upload(
-      image,
-      { public_id: timeStamp },
-      async function (error, result) {
-        console.log(result)
-        const newMessageForDb = new Conversation({
-          textMessage,
-          from: from,
-          to: to,
-          reciever,
-          sender,
-          timeStamp,
-          imageUrl: result,
-        });
+    console.log(image);
+    if (image) {
+      cloudinary.v2.uploader.upload(
+        image,
+        { public_id: timeStamp },
+        async function (error, result) {
+          console.log(result);
+          const newMessageForDb = new Conversation({
+            textMessage,
+            from: from,
+            to: to,
+            reciever,
+            sender,
+            timeStamp,
+            imageUrl: result,
+          });
 
-        await newMessageForDb.save().then(() => {
-          console.log("Message has been saved successfully");
-          console.log(newMessageForDb);
-        });
-      }
-    );}else{
+          await newMessageForDb.save().then(() => {
+            console.log("Message has been saved successfully");
+            console.log(newMessageForDb);
+          });
+        }
+      );
+    } else {
       const newMessageForDb = new Conversation({
-          textMessage,
-          from: from,
-          to: to,
-          reciever,
-          sender,
-          timeStamp,
-        });
+        textMessage,
+        from: from,
+        to: to,
+        reciever,
+        sender,
+        timeStamp,
+      });
 
-        await newMessageForDb.save().then(() => {
-          console.log("Message has been saved successfully");
-          console.log(newMessageForDb);
-        });
+      await newMessageForDb.save().then(() => {
+        console.log("Message has been saved successfully");
+        console.log(newMessageForDb);
+      });
     }
-    
-    
 
     [...wss.clients]
       .filter((client) => client.id === to)
