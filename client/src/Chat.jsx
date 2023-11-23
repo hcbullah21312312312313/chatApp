@@ -70,14 +70,17 @@ export default function Chat() {
   useEffect(() => {
     const withoutDupes = _.uniqBy(prevConversation, "textMessage");
     console.log(withoutDupes);
-    lastMessage.scrollIntoView(true);
-  }, [prevConversation]);
+    console.log(lastMessage.current)
+    if(activeUserId !=undefined){
+    lastMessage.current.scrollIntoView({block: "end", behavior: "smooth"})
+    }
+  }, [prevConversation  ]);
 
   useEffect(() => {
     axios.get("/chateoo/" + activeUserId).then((res) => {
       console.log(res.data);
       console.log(prevConversation);
-      setConversation(res.data,);
+      setConversation(res.data);
     });
   }, [activeUserId, activeUser]);
   return (
@@ -139,7 +142,11 @@ export default function Chat() {
         <div className="flex-grow">
           {onlineUsers[activeUserId] ? (
             <div className="relative h-full">
-              <div className="bg-sky-500 p-2 inset-0  w-full   flex gap-2 items-center rounded-md">
+              
+              <div
+                className="overflow-y-scroll absolute   inset-0 "
+              >
+              <div className="bg-sky-500 p-2 inset-0  w-full  flex gap-2 items-center rounded-md">
                 <div className="flex flex-grow items-center  gap-2">
                   <Avatar
                     userId={activeUserId}
@@ -184,10 +191,6 @@ export default function Chat() {
                   </svg>
                 </span>
               </div>
-              <div
-                style={{ marginTop: "6.2%" }}
-                className="overflow-y-scroll absolute   inset-0 p-3"
-              >
                 {withoutDupes.map((message) => {
                   if (
                     (message.from === activeUserId && message.to === id) ||
@@ -226,9 +229,9 @@ export default function Chat() {
               </div>
             </div>
           ) : (
-            <div className="flex ">
-              <p className="text-grey-100 text-center">
-                &larr;Please select a contact form the sidebar
+            <div className="flex h-full items-center flex-grow">
+              <p className="text-gray-500 w-full" style={{textAlign:"center"}}>
+                &larr; Please select a contact form the sidebar
               </p>
             </div>
           )}
@@ -245,11 +248,7 @@ export default function Chat() {
               placeholder="Tap to start typing"
               className="flex-grow p-2 bg-white bordered"
             />
-            <input
-              onChange={(e) => setImage(e.target.files[0].name)}
-              type="file"
-            />
-            {console.log(image)}
+            
             <button
               className="bg-sky-500 p-2 rounded-md text-white"
               type="submit"

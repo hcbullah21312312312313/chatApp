@@ -40,11 +40,11 @@ app.post("/register", async (req, res) => {
 
 app.get("/profile", async (req, res) => {
   const token = req.cookies?.signToken;
-  const totallUsers = await (await USER.find({})).length;
+  const allUsers = await (await USER.find({}))
   if (token) {
     jwt.verify(token, process.env.SECRET_KEY_JWT, {}, (err, userData) => {
       if (err) throw err;
-      res.json({ ...userData, totallUsers }).status(200);
+      res.json({ ...userData, allUsers }).status(200);
     });
   } else {
     res.json("Unauthorized").status(401);
@@ -86,46 +86,21 @@ wss.on("connection", (connection, req) => {
 
   connection.on("message", async (message) => {
     const newMessage = JSON.parse(message.toString());
-    const { to, from, textMessage, reciever, sender, timeStamp, image } =
-      newMessage;
-    console.log(image);
-    if (image) {
-      cloudinary.v2.uploader.upload(
-        image,
-        { public_id: timeStamp },
-        async function (error, result) {
-          console.log(result);
-          const newMessageForDb = new Conversation({
-            textMessage,
-            from: from,
-            to: to,
-            reciever,
-            sender,
-            timeStamp,
-            imageUrl: result,
-          });
+    const { to, from, textMessage, reciever, sender, timeStamp } = newMessage;
 
-          await newMessageForDb.save().then(() => {
-            console.log("Message has been saved successfully");
-            console.log(newMessageForDb);
-          });
-        }
-      );
-    } else {
-      const newMessageForDb = new Conversation({
-        textMessage,
-        from: from,
-        to: to,
-        reciever,
-        sender,
-        timeStamp,
-      });
+    const newMessageForDb = new Conversation({
+      textMessage,
+      from: from,
+      to: to,
+      reciever,
+      sender,
+      timeStamp,
+    });
 
-      await newMessageForDb.save().then(() => {
-        console.log("Message has been saved successfully");
-        console.log(newMessageForDb);
-      });
-    }
+    await newMessageForDb.save().then(() => {
+      console.log("Message has been saved successfully");
+      console.log(newMessageForDb);
+    });
 
     [...wss.clients]
       .filter((client) => client.id === to)
